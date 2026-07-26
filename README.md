@@ -1,6 +1,6 @@
-FireHearts ❤️‍🔥
+FireHearts 🔥
 Trova la tua scintilla. Non il tuo prossimo match.
-Dating app premium con Fire Score reale. Swipe fluido, Super Like monetizzabile, profilo editabile, prompts stile Hinge e foto HD. Pronta per demo client.
+Dating app premium con Fire Score DINAMICO, Vibe Tags, Prompts swipeabili e Daily Limits. Pronta per demo.
 
 Version
 Expo
@@ -11,205 +11,119 @@ License
 📑 Indice
 Panoramica
 Demo
-Features
+Features Giorno 6
 Tech Stack
-Struttura Progetto
+Struttura
 Installazione
 Come Funziona
-Fix Giorno 5
+Changelog
 Roadmap
-Autore
 Panoramica
-FireHearts non è un clone di Tinder. È un'app che misura il valore reale delle persone con un Fire Score basato su feedback.
+FireHearts misura il valore reale con Fire Score dinamico. Non è Tinder: vibe, prompts e feedback reali.
 
-Filosofia: meno swipe a caso, più personalità. Foto HD + bio vera + prompts + feedback reali.
-
-Stato attuale: v0.5.3 - Giorno 5 chiuso. Grafica HD, 6 profili, Super Like, Edit Profilo, prompts Hinge integrati. Flip da stabilizzare Giorno 6.
+Stato: v0.6.0 - Giorno 6 CHIUSO - 6 profili HD 800px, Fire Score dinamico, Vibe Tags filtrabili, 3 prompts swipeabili, Super Like + Undo giornalieri con reset mezzanotte.
 
 Demo
-Avvio rapido
 bash
 npx expo install @react-native-async-storage/async-storage
 npx expo start --clear
-# w -> Chrome
-# Scan QR con Expo Go su Android
-Cosa vedi
-Scopri  -> 6 card HD 800px, no banda nera sopra, badge flottanti, prompt preview
-          Bottoni: X - Undo - SUPER - Like
-          Tap bottone "Vedi Bio Completa + Prompts" per flip
-
-Inviate -> Lista attese con SUPER badge
-
-Match   -> Card con bordo blu se Super Like, bottone Apri Chat
-
-Profilo -> Avatar con anello Fire, Score 4.7, Modifica profilo salvato, Stats, Super rimanenti
-
-Chat    -> Bubble rossa/grigia, input fisso
-
-Match Popup -> Match! / Super Match! con animazione spring
-Features
-Giorno 5 - Grafica HD & Personalità [ATTUALE - v0.5.3]
-Foto HD & Card Pulita
-Da randomuser.me 200px a Unsplash 800px q=80 - 6 profili alta definizione
-Rimossa banda nera sopra (cardGradientTop) che copriva le facce
-Solo cardGradientBottom 170px 0.85 per leggibilità testo
-Badge flottanti con ombra: ⭐ Score + ✓ Verificato + SUPER
-Card 32px radius, 480px height, ombra profonda, maxWidth 360
-2 card dietro con scala 0.88 / 0.94 per effetto mazzo infinito
-Hinge Prompts 💭 - Must da Hinge
-Ogni profilo ha 2 prompts tipo Hinge:
-Il mio weekend ideale -> Lago di Como + aperitivo + nessun telefono
-Unpopular opinion -> La palestra è meditazione
-Cucino meglio di -> Tua nonna. E non scherzo.
-Fronte card: preview 1 prompt sotto bio
-Retro card (flip): lista completa prompts + bio lunga + feedback reali
-Rende l'app meno banale, vedi subito personalità
-Fix Flip & Stabilità
-flipAnim.setValue(0) in goNextCard e handleUndo per reset completo
-Bottone esplicito Vedi Bio Completa + Prompts per flip garantito anche con mouse
-setFlippedId(null) al cambio filtro città
-Fix da finalizzare Giorno 6: round card fluido
-Mantenuti dal Giorno 4
-Super Like 💙: 3 al giorno, 100% match, animazione su 280ms, badge blu, counter persistente, undo restituisce
-Edit Profilo ✏️: nome, età, città, bio, salvataggio AsyncStorage permanente
-Persistenza totale: sent, matches, swipeIndex, chats, history, superLiked, superCount, myProfile
-Undo ↩️: torna indietro anche per Super Like
-Giorno 4 - Monetizzazione
-Super Like monetizzabile, counter, popup Super Match!
-Edit Profilo con modal
-Client pulito, emoji reali
-Giorno 3 - Persistenza Core
-AsyncStorage per tutto
-Mazzo infinito con 2 card dietro
-Match popup spring
-Reset cancella tutto
-Giorno 2 - Swipe Premium
-PanResponder fluido, overlay, badge score, bottom bar, glow effetti
-Giorno 1 - Base
-Card profilo, filtri città, tab Scopri/Inviate/Match/Profilo, chat 1-to-1
+# w -> Chrome | QR con Expo Go
+Scopri -> 6 card HD, Fire Score colorato, Vibe tappabili #Chef, Prompts carousel 3x swipeabile, bottoni X - Undo(3) - SUPER(3) - Like
+Flip -> Fire Score breakdown + Vibe filtrabili + 3 Prompts + Reviews con rating
+Inviate -> Attese
+Match -> SUPER bordo blu
+Profilo -> Score dinamico con pulse + stats + daily limits
+Chat -> Chat 1-to-1
+Match Popup -> Match! / Super Match! + Fire Score
+Features Giorno 6
+6.1 Fire Score Dinamico 🔥
+js
+calculateFireScore = mediaReviews + verified(0.15) + online(0.05) + attivita(0-0.1) + match*0.02
+Colore: verde 4.8+, giallo 4.5+, rosso <4.5
+Breakdown visibile nel flip
++0.02 per ogni match - il tuo score sale giocando
+Pulse animation
+6.2 Vibe Tags Interattivi 🔍
+17 vibe: Avventurosa, Buongustaia, Viaggi, Intensa, Natura, Palestra, Chef, Passionale, Creativa, Arty, Design, Zen, Curiosa, Yoga, Analogica, Vinile
+Tap su #Chef in card -> filtra tutte le Chef
+Doppio filtro: Citta + Vibe
+Pillola gialla attiva + Azzera filtri
+6.3 Prompts Swipeabili 💬
+3 prompts per profilo con icona: 🏔️ Weekend ideale, ✈️ Sono brava a, 💚 Green flag
+Carousel orizzontale nella card front con dots ● ○ ○
+Flip mostra tutti e 3 grandi
+Ice-breaker per chat
+6.4 Daily Limits 💙↩️
+3 Super Like + 3 Undo al giorno
+Reset automatico mezzanotte: check lastResetDate != today
+Contatori in pill + bottoni con badge
+AsyncStorage: fh_superCount, fh_undoCount, fh_lastResetDate
+Base Stabile
+6 profili Unsplash 800px q=80
+Emoji UTF-8 reali visibili (no \u escapes)
+Flip fixato con topProfileIdRef per tutte le 6 card
+Bottoni pillola flottante zIndex 30, paddingBottom 300, mai nascosti
+Persistenza: 11 chiavi AsyncStorage
 Tech Stack
-Layer	Tecnologia	Note Giorno 5
-Framework	React Native + Expo 53	Managed workflow
-Linguaggio	JavaScript (ES6+)	Single file per velocità, modularizzazione Giorno 6
-Immagini	Unsplash 800px	HD, auto=format&fit=crop
-Animazioni	Animated API + PanResponder	Swipe, Flip 300ms, Match spring
-Storage	@react-native-async-storage/async-storage	8 chiavi persistenti
-UI	StyleSheet custom	Dark premium #08080a, no lib esterne
-Deploy	Expo Go	QR + --tunnel per Android
-Struttura Progetto
+Layer	Tech	Note Giorno 6
+Framework	React Native + Expo 53	Managed
+Storage	AsyncStorage	11 chiavi
+Anim	Animated + PanResponder	Swipe, Flip 300ms, Match spring, Score pulse
+Immagini	Unsplash 800px	HD
+UI	StyleSheet custom	Dark #08080a
+Struttura
 FireHearts/
-├── App.js              # Tutta l'app - 6 profili HD, Swipe, Flip, Super Like, Prompts, Chat
-├── README.md           # Questo file - v0.5.3
-├── package.json        # Dipendenze + async-storage
-├── app.json            # Config Expo
-├── assets/             # Icone splash Expo
-└── screenshots/        # Da aggiungere Giorno 6
-Architettura Giorno 1-5: single-file per review rapida. Giorno 6 si splitta in /components, /screens, /hooks, /services, /data.
+├── App.js              # v0.6.0 Giorno 6 finale - 6 HD + Fire Score dinamico + Vibe + Prompts + Daily
+├── README.md           # Questo file
+├── CHIUSURA_GIORNO6.md # Procedura chiusura
+├── package.json
+├── app.json
+└── assets/
+Giorno 7: split in /components, /data, /utils, /hooks
 
 Installazione
-Prerequisiti
-Node.js >= 18
-Expo Go su Android (Play Store)
-Setup
 bash
-# 1. Clona
 git clone https://github.com/TUO-USER/FireHearts.git
 cd FireHearts
-
-# 2. Dipendenze
 npm install
 npx expo install @react-native-async-storage/async-storage
-
-# 3. Avvia
 npx expo start --clear
-
-# 4. Sul telefono
-# Apri Expo Go -> Scan QR (dentro Expo Go, non fotocamera)
-# Stessa WiFi PC-telefono o usa --tunnel
+# Expo Go -> Scan QR (dentro app, non fotocamera)
+# Stessa WiFi o --tunnel
 npx expo start --tunnel
-Comandi utili
-bash
-npx expo start --clear   # Pulisci cache se schermo bianco
-r -> Reload app
-w -> Web Chrome
 Come Funziona
-Logica Swipe & Flip
-javascript
-// Swipe: dx > 110 = Like ✨ (75% match), dx < -110 = Nope X, dy < -110 = Super Like SUPER (100%)
-// Tap < 10px = Flip bio
-// Bottone "Vedi Bio Completa + Prompts" = Flip garantito mouse + touch
-// goNextCard: reset swipePosition + flippedId null + flipAnim 0 + swipeIndex++
-// History per Undo: {id, action: 'like'|'nope'|'super'}
-Profili Giorno 5
-6 profili mock HD con:
+js
+// Swipe: dx>110 Like (75% match), dx<-110 Nope, dy<-110 Super (100% match, -1 counter)
+// Tap <10px = Flip
+// Vibe tap = filterVibe = vibe, reset index
+// Prompt carousel = ScrollView horizontal pagingEnabled, onMomentumScrollEnd setPromptIndex
+// Daily reset: today = new Date().toDateString(), if lastReset != today -> reset 3/3
+// Fire Score: media rating + bonus + match*0.02
+Profili:
 
-id, name, city, distance, score, bio, longBio, prompts[2]{q,a}, reviews[1], photo Unsplash 800px, online, verified
-Esempio:
+js
+{ id, name, city, distance, vibe[3], bio, longBio, prompts[3]{q,a,icon}, reviews[2-3]{author,text,rating}, photo Unsplash, online, verified, activity }
+AsyncStorage:
 
-javascript
-{ name: 'Sofia, 24', city: 'Milano', score: '4.8',
-  prompts: [
-    { q: 'Il mio weekend ideale', a: 'Lago di Como + aperitivo + nessun telefono' },
-    { q: 'Sono brava a', a: 'Organizzare viaggi impossibili in 24h' }
-  ]
-}
-Persistenza
-Chiavi AsyncStorage:
-
-fh_sent, fh_matches, fh_swipeIndex, fh_chats, fh_history, fh_superLiked, fh_superCount, fh_myProfile
-Super Like - Revenue Core
-Press SUPER o swipe su
-Counter -1
-Animazione su 500px 280ms
-Aggiunto a sent + matches + superLiked
-Popup blu Super Match!
-Undo +1 counter
-Fix Giorno 5
-Risolti
- Banda nera sopra rimossa - foto pulita 100%
- Da 4 a 6 profili HD Unsplash
- Prompts Hinge integrati fronte/retro
- Super Like + Edit Profilo mantenuti
- Persistenza completa
- Bottone esplicito per flip mouse
-Da sistemare Giorno 6
- Round card fluido su Chrome (flip a volte non scatta al tap diretto)
- Ripristinare emoji reali ❤️‍🔥 ✨ 💙 senza \u escapes che corrompevano file
- Modularizzazione codice
- Onboarding 3 slide
- Fix Android SDK path (non serve emulatore, solo Expo Go)
-Nota Emoji
-Giorno 5.3 usa testo ASCII (SUPER, Verificato) per evitare corruzione file con \uXXXX vista in Giorno 4. Giorno 6 si reintroducono emoji UTF-8 reali con file salvato UTF-8 BOM.
-
+fh_sent, fh_matches, fh_swipeIndex, fh_chats, fh_history, fh_superLiked, fh_superCount, fh_undoCount, fh_lastResetDate, fh_myProfile, fh_filterVibe
+Changelog
+v0.6.0 Giorno 6 - Fire Score Dinamico + Vibe Tags + Prompts Swipeabili + Daily Limits + 6 HD + Emoji visibili + Flip fix + Bottoni fix
+v0.5.3 Giorno 5 - HD + Prompts Hinge + No banda nera
+v0.4 Giorno 4 - Super Like + Edit Profilo
+v0.3 Giorno 3 - Persistenza
+v0.2 Giorno 2 - Swipe premium
+v0.1 Giorno 1 - Base
 Roadmap
-Giorno 6 - Stabilità & UX
- Fix flip round 100% per tutte le 6 card
- Re-intro emoji vere pulite
- Animazione card più morbida
- Bumble must: donne scrivono per prime + timer 24h + Extend
- Modularizzazione /components
-Giorno 7 - Backend
- Firebase Auth
- Firestore profili + match + chat realtime
- Sync cross-device
- Onboarding
- Deploy TestFlight
-Giorno 8+ - Monetizzazione Scale
- Happn must: Incrociati vicino a te + mappa
- Super Like illimitati paywall
- Boost profilo
- Report & Block + Push
+ Giorno 6 - Fire Score dinamico, Vibe, Prompts, Daily Limits - CHIUSO
+ Giorno 7 - Refactoring /components + Onboarding + SVG icons
+ Giorno 8 - Firebase Auth + Firestore + Chat realtime
+ Giorno 9 - Monetizzazione: Boost, Super illimitati paywall
 Autore
-Carl Fogarty - Fondatore FireHearts
+Carl Fogarty - Fondatore FireHearts - Bascape • Lombardia
 
-Sto costruendo l'app che misura il valore vero delle persone. Giorno 5 di 30.
+Giorno 6 di 30 - v0.6.0 chiuso.
 
-Location: Bascape • Lombardia
-Stack: React Native + Expo + Firebase (prossimo)
-Licenza
-MIT - Libero per studio/portfolio. Commerciale contatta autore.
+v0.6.0 - Giorno 6 FINALE - Fire Score Dinamico + Vibe Tags + Prompts Swipeabili + Daily Limits
 
-v0.5.3 - Giorno 5 - HD + Prompts Hinge + No Banda Nera + Super Like - Flip fix Giorno 6
-
-Made with ❤️‍🔥 in Bascape - 6 profili HD, foto pulite, personalità vera
+Made with 🔥 in Bascape
 
