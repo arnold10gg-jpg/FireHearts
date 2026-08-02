@@ -28,6 +28,7 @@ const STORAGE_KEYS = {
   SENT: 'fh_sent', MATCHES: 'fh_matches', SUPER_LIKED: 'fh_superLiked', SWIPE_INDEX: 'fh_swipeIndex',
   FILTER_CITY: 'fh_filterCity', CUSTOM_CITY: 'fh_customCity', FILTER_VIBE: 'fh_filterVibe',
   MY_PROFILE: 'fh_myProfile', ONBOARDING_DONE: 'fh_onboardingDone', NEARBY_SEEN: 'fh_nearbySeen', CHATS: 'fh_chats_v2',
+  USER_REGISTERED: 'fh_userRegistered', USER_DATA: 'fh_userData',
 };
 
 const DEFAULT_MY_PROFILE = { 
@@ -37,6 +38,165 @@ const DEFAULT_MY_PROFILE = {
 
 function calculateFireScore(p){ const avg = p.reviews ? p.reviews.reduce((s,r)=>s+r.rating,0)/p.reviews.length : 4.6; return Math.min(5, avg+0.15).toFixed(1); }
 function getScoreColor(s){ const v=parseFloat(s); if(v>=4.8) return '#00d084'; if(v>=4.5) return '#ffcc00'; return '#ff7a7a'; }
+
+
+// ============================================================================
+// GIORNO 8.3 - REGISTRATION FORM - Fix escape sicuri
+// ============================================================================
+const ALL_VIBES_SELECT = ['Avventurosa','Buongustaia','Viaggi','Intensa','Natura','Palestra','Chef','Passionale','Creativa','Arty','Design','Zen','Curiosa','Yoga','Analogica','Vinile','Founder','Business'];
+
+function RegistrationForm({ onComplete, onSkip }) {
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [city, setCity] = useState('');
+  const [bio, setBio] = useState('');
+  const [selectedVibes, setSelectedVibes] = useState([]);
+  const [photo, setPhoto] = useState('');
+  const [step, setStep] = useState(1);
+
+  const pickImage = async () => {
+    try {
+      if (!ImagePicker) {
+        Alert.alert('Info', 'Installa expo-image-picker: npx expo install expo-image-picker. Per ora incolla link https');
+        return;
+      }
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permesso negato', 'Serve permesso foto');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets[0]) {
+        setPhoto(result.assets[0].uri);
+      }
+    } catch (e) {
+      Alert.alert('Errore galleria');
+    }
+  };
+
+  const toggleVibe = (vibe) => {
+    if (selectedVibes.includes(vibe)) {
+      setSelectedVibes(selectedVibes.filter(v => v !== vibe));
+    } else {
+      if (selectedVibes.length < 5) {
+        setSelectedVibes([...selectedVibes, vibe]);
+      } else {
+        Alert.alert('Max 5 vibe', 'Puoi scegliere max 5 vibe');
+      }
+    }
+  };
+
+  const nextStep = () => {
+    if (step === 1 && (!name.trim() || !age.trim() || !city.trim())) {
+      Alert.alert('Completa', 'Nome, eta e citta sono obbligatori');
+      return;
+    }
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      const userData = {
+        name: name.trim(),
+        age: parseInt(age) || 25,
+        city: city.trim(),
+        bio: bio.trim() || 'Fondatore di FireHearts.',
+        myVibes: selectedVibes.length > 0 ? selectedVibes : ['Avventuroso'],
+        photo: photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format&fit=crop',
+        registeredAt: Date.now(),
+      };
+      onComplete(userData);
+    }
+  };
+
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  return (
+    <View style={styles.regContainer}>
+      <View style={styles.regHeader}>
+        <Text style={styles.regTitle}>Crea il tuo profilo</Text>
+        <Text style={styles.regSub}>Giorno 8 - Registrazione vera - {step}/3</Text>
+        <View style={styles.regProgressBar}>
+          <View style={[styles.regProgressFill, { width: (step/3*100) + '%' }]} />
+        </View>
+      </View>
+
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.regForm} showsVerticalScrollIndicator={false}>
+        {step === 1 && (
+          <View style={styles.regStepContainer}>
+            <Text style={styles.regStepTitle}>Chi sei?</Text>
+            <Text style={styles.regLabel}>Nome *</Text>
+            <TextInput style={styles.regInput} value={name} onChangeText={setName} placeholder="Il tuo nome" placeholderTextColor="#555" />
+            <Text style={styles.regLabel}>Eta *</Text>
+            <TextInput style={styles.regInput} value={age} onChangeText={setAge} placeholder="25" placeholderTextColor="#555" keyboardType="numeric" maxLength={2} />
+            <Text style={styles.regLabel}>Citta - Qualsiasi citta al mondo *</Text>
+            <TextInput style={styles.regInput} value={city} onChangeText={setCity} placeholder="Tokyo, New York, Torino, Londra..." placeholderTextColor="#555" />
+            <Text style={styles.regHint}>Puoi scrivere qualsiasi citta, non solo Milano/Roma - Fix Giorno 8</Text>
+          </View>
+        )}
+
+        {step === 2 && (
+          <View style={styles.regStepContainer}>
+            <Text style={styles.regStepTitle}>Raccontati</Text>
+            <Text style={styles.regLabel}>Bio breve</Text>
+            <TextInput style={[styles.regInput, { height: 80 }]} value={bio} onChangeText={setBio} placeholder="Fondatore di FireHearts, amo codice e persone autentiche..." placeholderTextColor="#555" multiline />
+            <Text style={styles.regLabel}>Vibe - Scegli max 5</Text>
+            <View style={styles.regVibeGrid}>
+              {ALL_VIBES_SELECT.map(v => (
+                <TouchableOpacity key={v} style={[styles.regVibeChip, selectedVibes.includes(v) && styles.regVibeChipActive]} onPress={() => toggleVibe(v)}>
+                  <Text style={[styles.regVibeText, selectedVibes.includes(v) && styles.regVibeTextActive]}>#{v}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={styles.regHint}>{selectedVibes.length}/5 selezionati: {selectedVibes.join(', ') || 'nessuno'}</Text>
+          </View>
+        )}
+
+        {step === 3 && (
+          <View style={styles.regStepContainer}>
+            <Text style={styles.regStepTitle}>Foto profilo</Text>
+            <TouchableOpacity style={styles.regPickBtn} onPress={pickImage}>
+              <Text style={styles.regPickText}>Scegli dalla galleria</Text>
+            </TouchableOpacity>
+            <Text style={styles.regLabel}>O incolla link https</Text>
+            <TextInput style={styles.regInput} value={photo} onChangeText={setPhoto} placeholder="https://images.unsplash.com/..." placeholderTextColor="#555" />
+            {photo ? (
+              <View style={{ alignItems: 'center', marginTop: 16 }}>
+                <Image source={{ uri: photo }} style={{ width: 140, height: 140, borderRadius: 70, borderWidth: 2, borderColor: '#ff3b30' }} />
+                <Text style={styles.regHint}>Preview - Foto che vedranno gli altri</Text>
+              </View>
+            ) : (
+              <View style={styles.regNoPhotoBox}>
+                <Text style={{ fontSize: 40 }}>Persona</Text>
+                <Text style={styles.regHint}>Nessuna foto - useremo default</Text>
+              </View>
+            )}
+            <View style={styles.regPhotoFixBox}>
+              <Text style={styles.regPhotoFixText}>Usa galleria o link https - Non usare percorsi locali Windows</Text>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.regFooter}>
+        {step > 1 && <TouchableOpacity style={styles.regBackBtn} onPress={prevStep}><Text style={styles.regBackText}>Indietro</Text></TouchableOpacity>}
+        <TouchableOpacity style={styles.regNextBtn} onPress={nextStep}>
+          <Text style={styles.regNextText}>{step === 3 ? 'Completa' : 'Avanti'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.regSkipBtn} onPress={onSkip}>
+        <Text style={styles.regSkipText}>Salta per ora (usa profilo default)</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 
 // ICONA PROFESSIONALE CON ANIMAZIONE AL CLICK
 function HeartDevilPro({ size = 84, triggerAnim }) {
@@ -152,16 +312,55 @@ function FaviconSetter() {
 }
 
 function OnboardingSingle({ onComplete }) {
+  const [showRegistration, setShowRegistration] = useState(false);
   const [animTrigger, setAnimTrigger] = useState(0);
+
+  if (showRegistration) {
+    return (
+      <RegistrationForm 
+        onComplete={async (userData) => {
+          try {
+            await AsyncStorage.setItem('fh_userData', JSON.stringify(userData));
+            await AsyncStorage.setItem('fh_userRegistered', 'true');
+            await AsyncStorage.setItem('fh_myProfile', JSON.stringify({
+              name: userData.name,
+              age: userData.age,
+              city: userData.city,
+              bio: userData.bio,
+              longBio: userData.bio,
+              photo: userData.photo,
+              myVibes: userData.myVibes,
+            }));
+            await AsyncStorage.setItem('fh_onboardingDone', 'true');
+          } catch(e){}
+          onComplete(userData);
+        }}
+        onSkip={async () => {
+          try {
+            await AsyncStorage.setItem('fh_userRegistered', 'true');
+            await AsyncStorage.setItem('fh_onboardingDone', 'true');
+          } catch(e){}
+          onComplete();
+        }}
+      />
+    );
+  }
+
   return (
     <View style={styles.onboardingSingle}>
       <View style={styles.onboardingGlow} />
       <FireHeartsArtisticLogo onLogoPress={()=>setAnimTrigger(v=>v+1)} logoAnimTrigger={animTrigger} />
       <View style={{ width: '100%', maxWidth: 340, marginTop: 8 }}>
-        <Text style={styles.onboardingBigTitle}>Basta profili finti.{"\n"}Persone reali.</Text>
-        <Text style={styles.onboardingBigSub}>Fire Score vero. Voice 15s. Incroci reali.</Text>
+        <Text style={styles.onboardingBigTitle}>Basta profili finti. Persone reali.</Text>
+        <Text style={styles.onboardingBigSub}>Fire Score vero. Voice 15s. Incroci reali. Giorno 8 - Registrazione vera con foto e citta mondo</Text>
+        <View style={{ marginTop: 16, gap: 8 }}>
+          <View style={styles.featureRow}><View style={styles.featureIcon}><Text>Note</Text></View><View><Text style={styles.featureTitle}>Registrazione vera</Text><Text style={styles.featureSub}>Nome, eta, citta mondo, bio, vibe, foto</Text></View></View>
+          <View style={styles.featureRow}><View style={styles.featureIcon}><Text>Mondo</Text></View><View><Text style={styles.featureTitle}>Citta mondo</Text><Text style={styles.featureSub}>Tokyo, New York, qualsiasi citta</Text></View></View>
+          <View style={styles.featureRow}><View style={styles.featureIcon}><Text>Foto</Text></View><View><Text style={styles.featureTitle}>Foto galleria</Text><Text style={styles.featureSub}>Scegli dalla galleria, fix percorsi</Text></View></View>
+        </View>
       </View>
-      <TouchableOpacity style={styles.enterButton} onPress={onComplete}><Text style={styles.enterButtonText}>Entra 🔥</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.enterButton} onPress={()=>setShowRegistration(true)}><Text style={styles.enterButtonText}>Crea profilo</Text></TouchableOpacity>
+      <TouchableOpacity style={{ marginTop: 12 }} onPress={onComplete}><Text style={{ color: '#666', fontSize: 11 }}>Entra senza registrarti</Text></TouchableOpacity>
     </View>
   );
 }
@@ -255,9 +454,10 @@ function HomeDashboard({ onGoToTab }) {
 }
 
 export default function App() {
-  const [sent,setSent]=useState([]); const [matches,setMatches]=useState([]); const [superLiked,setSuperLiked]=useState([]); const [tab,setTab]=useState('home'); const [filterCity,setFilterCity]=useState('Tutti'); const [customCity,setCustomCity]=useState(''); const [filterVibe,setFilterVibe]=useState('Tutti'); const [swipeIndex,setSwipeIndex]=useState(0); const [loaded,setLoaded]=useState(false); const [onboardingDone,setOnboardingDone]=useState(false); const [showFilters,setShowFilters]=useState(false); const [boostActive,setBoostActive]=useState(false); const [boostExpiry,setBoostExpiry]=useState(null); const [boostCount,setBoostCount]=useState(3); const [myProfile,setMyProfile]=useState(DEFAULT_MY_PROFILE); const [isEditing,setIsEditing]=useState(false); const [editName,setEditName]=useState(''); const [editCity,setEditCity]=useState(''); const [editBio,setEditBio]=useState(''); const [editLongBio,setEditLongBio]=useState(''); const [editPhoto,setEditPhoto]=useState(''); const [nowTick,setNowTick]=useState(Date.now()); const [flippedId,setFlippedId]=useState(null); const [nearbySeen,setNearbySeen]=useState([]); const [chats,setChats]=useState({}); const [activeChat,setActiveChat]=useState(null); const [logoAnimTrigger,setLogoAnimTrigger]=useState(0);
+  const [sent,setSent]=useState([]); const [matches,setMatches]=useState([]); const [superLiked,setSuperLiked]=useState([]); const [showMatch,setShowMatch]=useState(null); const [tab,setTab]=useState('home'); const [filterCity,setFilterCity]=useState('Tutti'); const [customCity,setCustomCity]=useState(''); const [filterVibe,setFilterVibe]=useState('Tutti'); const [swipeIndex,setSwipeIndex]=useState(0); const [loaded,setLoaded]=useState(false); const [onboardingDone,setOnboardingDone]=useState(false); const [showFilters,setShowFilters]=useState(false); const [boostActive,setBoostActive]=useState(false); const [boostExpiry,setBoostExpiry]=useState(null); const [boostCount,setBoostCount]=useState(3); const [myProfile,setMyProfile]=useState(DEFAULT_MY_PROFILE); const [isEditing,setIsEditing]=useState(false); const [editName,setEditName]=useState(''); const [editCity,setEditCity]=useState(''); const [editBio,setEditBio]=useState(''); const [editLongBio,setEditLongBio]=useState(''); const [editPhoto,setEditPhoto]=useState(''); const [nowTick,setNowTick]=useState(Date.now()); const [flippedId,setFlippedId]=useState(null); const [nearbySeen,setNearbySeen]=useState([]); const [chats,setChats]=useState({}); const [activeChat,setActiveChat]=useState(null); const [logoAnimTrigger,setLogoAnimTrigger]=useState(0);
   const swipePos=useRef(new Animated.ValueXY({x:0,y:0})).current;
   const flipAnim=useRef(new Animated.Value(0)).current;
+  const matchScale=useRef(new Animated.Value(0)).current;
 
   useEffect(()=>{ const i=setInterval(()=>setNowTick(Date.now()),1000); return()=>clearInterval(i); },[]);
   useEffect(()=>{ (async()=>{ try{
@@ -286,12 +486,12 @@ export default function App() {
     } catch (e) { Alert.alert('Errore'); }
   };
 
-  // RESET FUNZIONANTE - pulisce tutto
+  // RESET FUNZIONANTE - pulisce tutto + onboarding per vedere registrazione Giorno 8
   const handleReset = async () => {
     try {
-      setFilterCity('Tutti'); setCustomCity(''); setFilterVibe('Tutti'); setSwipeIndex(0); setSent([]); setMatches([]); setSuperLiked([]); setNearbySeen([]); setFlippedId(null); swipePos.setValue({x:0,y:0}); flipAnim.setValue(0);
-      await AsyncStorage.multiRemove([STORAGE_KEYS.SENT, STORAGE_KEYS.MATCHES, STORAGE_KEYS.SUPER_LIKED, STORAGE_KEYS.SWIPE_INDEX, STORAGE_KEYS.FILTER_CITY, STORAGE_KEYS.CUSTOM_CITY, STORAGE_KEYS.FILTER_VIBE, STORAGE_KEYS.NEARBY_SEEN]);
-      Alert.alert('Reset', 'Tutto azzerato! Filtri, swipe, inviate e match resettati 🔄');
+      setFilterCity('Tutti'); setCustomCity(''); setFilterVibe('Tutti'); setSwipeIndex(0); setSent([]); setMatches([]); setSuperLiked([]); setNearbySeen([]); setFlippedId(null); setOnboardingDone(false); setMyProfile(DEFAULT_MY_PROFILE); setChats({}); setActiveChat(null); swipePos.setValue({x:0,y:0}); flipAnim.setValue(0);
+      await AsyncStorage.multiRemove([STORAGE_KEYS.SENT, STORAGE_KEYS.MATCHES, STORAGE_KEYS.SUPER_LIKED, STORAGE_KEYS.SWIPE_INDEX, STORAGE_KEYS.FILTER_CITY, STORAGE_KEYS.CUSTOM_CITY, STORAGE_KEYS.FILTER_VIBE, STORAGE_KEYS.NEARBY_SEEN, STORAGE_KEYS.ONBOARDING_DONE, STORAGE_KEYS.MY_PROFILE, STORAGE_KEYS.CHATS, STORAGE_KEYS.USER_REGISTERED, STORAGE_KEYS.USER_DATA]);
+      Alert.alert('Reset Completato', 'Tutto azzerato! Ora vedrai la registrazione 3-step Giorno 8 🔄🔥');
     } catch(e){ console.log(e); }
   };
 
@@ -305,8 +505,36 @@ export default function App() {
   const isFlipped = flippedId === topProfile?.id;
 
   const goNext = () => { try { swipePos.setValue({x:0,y:0}); setSwipeIndex(s=>s+1); setFlippedId(null); flipAnim.setValue(0); } catch {} };
-  const sendLike = (p) => { if(!p) return; if(!sent.includes(p.id)){ setSent([...sent,p.id]); if(Math.random()>0.35) setMatches(m=>[...m,p.id]); } };
-  const sendSuperLike = (p) => { if(!p) return; if(!superLiked.includes(p.id)) setSuperLiked([...superLiked,p.id]); if(!sent.includes(p.id)){ setSent([...sent,p.id]); setMatches(m=>[...m,p.id]); } };
+  const triggerMatchPopup = (p) => {
+    setShowMatch(p);
+    matchScale.setValue(0);
+    Animated.spring(matchScale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }).start();
+  };
+  const sendLike = (p) => { 
+    if(!p) return; 
+    if(!sent.includes(p.id)){ 
+      setSent([...sent,p.id]); 
+      // 40% chance match with popup, 60% stays in inviati
+      if(Math.random()>0.6){
+        setTimeout(()=>{
+          setMatches(m=>[...m,p.id]);
+          triggerMatchPopup(p);
+        }, 600);
+      }
+    } 
+  };
+  const sendSuperLike = (p) => { 
+    if(!p) return; 
+    if(!superLiked.includes(p.id)) setSuperLiked([...superLiked,p.id]); 
+    if(!sent.includes(p.id)){ 
+      setSent([...sent,p.id]); 
+      // Super like always match
+      setTimeout(()=>{
+        setMatches(m=>[...m,p.id]);
+        triggerMatchPopup(p);
+      }, 600);
+    } 
+  };
   const handleNearbyLike = (p) => { sendLike(p); setNearbySeen(s=>[...s,p.id]); };
   const handleNearbySuperLike = (p) => { sendSuperLike(p); setNearbySeen(s=>[...s,p.id]); };
   const handleFlip = (id) => {
@@ -317,7 +545,7 @@ export default function App() {
   const startEditing = () => { setEditName(myProfile.name); setEditCity(myProfile.city); setEditBio(myProfile.bio); setEditLongBio(myProfile.longBio || ''); setEditPhoto(myProfile.photo); setIsEditing(true); };
   const saveEditing = async () => { 
     let finalPhoto = editPhoto || myProfile.photo;
-    if (finalPhoto.includes('C:\\') || finalPhoto.includes('C:/') || finalPhoto.includes('Users\\')) { Alert.alert('Errore percorso', 'Usa galleria o link https://'); return; }
+    if (finalPhoto.charAt(1) === ':' || finalPhoto.includes('Users')) { Alert.alert('Errore percorso', 'Usa galleria o link https://'); return; }
     const upd={...myProfile, name: editName, city: editCity, bio: editBio, longBio: editLongBio, photo: finalPhoto}; 
     setMyProfile(upd); setIsEditing(false); await AsyncStorage.setItem(STORAGE_KEYS.MY_PROFILE, JSON.stringify(upd)); 
   };
@@ -443,9 +671,14 @@ export default function App() {
             <>
               <View style={{ alignItems: 'center', marginTop: 10 }}>
                 <View style={styles.profileAvatarWrapper}><View style={styles.profileAvatarRing} /><Image source={{ uri: myProfile.photo }} style={styles.profileAvatar} /></View>
-                <Text style={{ color: 'white', fontSize: 22, fontWeight: '900', marginTop: 14 }}>{myProfile.name}</Text>
+                <Text style={{ color: 'white', fontSize: 22, fontWeight: '900', marginTop: 14 }}>{myProfile.name}{myProfile.age ? `, ${myProfile.age}` : ''}</Text>
                 <Text style={{ color: '#ff3b30', fontSize: 12, marginTop: 2 }}>{myProfile.city}</Text>
-                <Text style={{ color: '#aaa', fontSize: 12, marginTop: 6, textAlign: 'center' }}>{myProfile.bio}</Text>
+                <Text style={{ color: '#aaa', fontSize: 12, marginTop: 6, textAlign: 'center', paddingHorizontal: 20 }}>{myProfile.bio}</Text>
+                {myProfile.myVibes && myProfile.myVibes.length > 0 && (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 12, justifyContent: 'center' }}>
+                    {myProfile.myVibes.map((v,i)=><View key={i} style={{ backgroundColor: 'rgba(255,59,48,0.15)', borderWidth: 1, borderColor: 'rgba(255,59,48,0.25)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100 }}><Text style={{ color: '#ff7a7a', fontSize: 11, fontWeight: '700' }}>#{v}</Text></View>)}
+                  </View>
+                )}
                 <TouchableOpacity style={styles.editProfileButton} onPress={startEditing}><Text style={styles.editProfileButtonText}>Modifica foto e bio</Text></TouchableOpacity>
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 18 }}>
                   <View style={styles.profileStat}><Text style={styles.profileStatNum}>{sent.length}</Text><Text style={styles.profileStatLabel}>Inviate</Text></View>
@@ -453,7 +686,18 @@ export default function App() {
                   <View style={styles.profileStat}><Text style={styles.profileStatNum}>{superLiked.length}</Text><Text style={styles.profileStatLabel}>Super</Text></View>
                 </View>
               </View>
-              <TouchableOpacity style={[styles.boostCard, boostActive && styles.boostCardActive]} onPress={handleBoost}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}><View style={styles.boostCardIcon}><Text>🚀</Text></View><View><Text style={styles.boostCardTitle}>{boostActive ? 'BOOST ATTIVO' : 'BOOST'}</Text><Text style={styles.boostCardSub}>{boostActive && boostExpiry ? `Scade tra ${Math.max(0, Math.floor((boostExpiry - nowTick)/60000))}m` : `${boostCount} disponibili`}</Text></View></View><View style={[styles.boostCardCta, boostActive && styles.boostCardCtaActive]}><Text style={styles.boostCardCtaText}>{boostActive ? 'Attivo' : 'Attiva'}</Text></View></View></TouchableOpacity>
+              <View style={styles.bigScoreBox}><Text style={[styles.bigScore, { color: getScoreColor('4.8') }]}>4.8 ★</Text><Text style={styles.bigScoreLabel}>FIRE SCORE</Text><Text style={styles.bigScoreSub}>Il tuo punteggio basato su vibe e attività. Più alto è, più visibilità hai!</Text></View>
+
+              <TouchableOpacity style={[styles.boostCard, boostActive && styles.boostCardActive]} onPress={handleBoost}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}><View style={styles.boostCardIcon}><Text>🚀</Text></View><View><Text style={styles.boostCardTitle}>{boostActive ? 'BOOST ATTIVO' : 'BOOST PREMIUM'}</Text><Text style={styles.boostCardSub}>{boostActive && boostExpiry ? `Scade tra ${Math.max(0, Math.floor((boostExpiry - nowTick)/60000))}m` : `${boostCount} disponibili - 10x più visibilità`}</Text></View></View><View style={[styles.boostCardCta, boostActive && styles.boostCardCtaActive]}><Text style={styles.boostCardCtaText}>{boostActive ? 'Attivo' : 'Attiva'}</Text></View></View></TouchableOpacity>
+
+              <View style={{ backgroundColor: 'rgba(255,204,0,0.08)', borderWidth: 1, borderColor: 'rgba(255,204,0,0.15)', borderRadius: 20, padding: 14, width: '100%', maxWidth: 380, alignSelf: 'center', marginTop: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,204,0,0.15)', alignItems: 'center', justifyContent: 'center' }}><Text>⭐</Text></View>
+                  <View style={{ flex: 1 }}><Text style={{ color: 'white', fontSize: 13, fontWeight: '800' }}>PREMIUM - Sblocca tutto</Text><Text style={{ color: '#888', fontSize: 11, marginTop: 2 }}>Like illimitati • Vedi chi ti ha messo like • Boost gratis</Text></View>
+                  <View style={{ backgroundColor: '#ffcc00', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100 }}><Text style={{ color: 'black', fontSize: 11, fontWeight: '800' }}>PROVA</Text></View>
+                </View>
+              </View>
+
               <TouchableOpacity style={{ marginTop: 20, backgroundColor: 'rgba(255,59,48,0.12)', paddingVertical: 14, borderRadius: 100, alignItems: 'center' }} onPress={handleReset}><Text style={{ color: '#ff3b30', fontWeight: '800' }}>Reset completo app ↺</Text></TouchableOpacity>
             </>
           )}
@@ -461,6 +705,22 @@ export default function App() {
       )}
 
       <FiltersBottomSheet visible={showFilters} onClose={()=>setShowFilters(false)} quickCities={QUICK_CITIES} allVibes={ALL_VIBES} filterCity={filterCity} setFilterCity={setFilterCity} customCity={customCity} setCustomCity={setCustomCity} filterVibe={filterVibe} setFilterVibe={setFilterVibe} />
+
+      {showMatch && (
+        <View style={styles.matchOverlay}>
+          <Animated.View style={[styles.matchPopup, { transform: [{ scale: matchScale }] }]}>
+            <Text style={styles.matchPopupTitle}>E' un Match! 🔥</Text>
+            <Text style={styles.matchPopupSub}>Tu e {showMatch.name.split(',')[0]} vi siete piaciuti</Text>
+            <View style={styles.matchAvatarsRow}>
+              <Image source={{ uri: myProfile.photo }} style={styles.matchPopupAvatar} />
+              <Text style={styles.matchHeart}>❤️</Text>
+              <Image source={{ uri: showMatch.photo }} style={styles.matchPopupAvatar} />
+            </View>
+            <TouchableOpacity style={styles.matchPopupPrimary} onPress={()=>{ setActiveChat(showMatch.id); setShowMatch(null); }}><Text style={styles.matchPopupPrimaryText}>Inizia a chattare 💬</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.matchPopupSecondary} onPress={()=>setShowMatch(null)}><Text style={styles.matchPopupSecondaryText}>Continua a swipare</Text></TouchableOpacity>
+          </Animated.View>
+        </View>
+      )}
 
       <View style={styles.bottomBarTransparent}>
         <TouchableOpacity style={[styles.tabItem, tab==='home'&&styles.tabActive]} onPress={()=>setTab('home')}><Text style={styles.tabIcon}>🏠</Text><Text style={[styles.tabText, tab==='home'&&styles.tabTextActive]}>Home</Text></TouchableOpacity>
@@ -602,6 +862,17 @@ const styles = StyleSheet.create({
   editSaveText: { color: 'white', fontWeight: '800' },
   pickPhotoBtn: { backgroundColor: '#2e8cff', borderRadius: 100, paddingVertical: 14, alignItems: 'center', marginTop: 12 },
   pickPhotoText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  matchOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.88)', alignItems: 'center', justifyContent: 'center', zIndex: 500 },
+  matchPopup: { width: '85%', maxWidth: 340, backgroundColor: '#151515', borderRadius: 28, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: '#ff3b30' },
+  matchPopupTitle: { color: 'white', fontSize: 26, fontWeight: '900', marginBottom: 6 },
+  matchPopupSub: { color: '#888', fontSize: 12, marginBottom: 20, textAlign: 'center' },
+  matchAvatarsRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
+  matchPopupAvatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: '#ff3b30' },
+  matchHeart: { fontSize: 28 },
+  matchPopupPrimary: { backgroundColor: '#ff3b30', borderRadius: 100, paddingVertical: 14, paddingHorizontal: 24, width: '100%', alignItems: 'center', marginBottom: 10 },
+  matchPopupPrimaryText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  matchPopupSecondary: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 100, paddingVertical: 12, width: '100%', alignItems: 'center' },
+  matchPopupSecondaryText: { color: '#888', fontWeight: '700', fontSize: 12 },
   bottomBarTransparent: { position: 'absolute', bottom: 20, left: 16, right: 16, flexDirection: 'row', backgroundColor: 'rgba(12,12,14,0.55)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', borderRadius: 28, paddingVertical: 10, justifyContent: 'space-around', zIndex: 100 },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 16 },
   tabActive: { backgroundColor: 'rgba(255,59,48,0.14)' },
@@ -635,4 +906,36 @@ const styles = StyleSheet.create({
   featureSub: { color: '#888', fontSize: 11, marginTop: 1 },
   enterButton: { backgroundColor: '#ff3b30', borderRadius: 100, paddingVertical: 16, paddingHorizontal: 32, width: '100%', maxWidth: 340, alignItems: 'center', marginTop: 24 },
   enterButtonText: { color: 'white', fontWeight: '900', fontSize: 15 },
+
+  // GIORNO 8.3 - Registration styles - fix escape
+  regContainer: { flex: 1, backgroundColor: '#08080a', paddingTop: 50 },
+  regHeader: { paddingHorizontal: 20, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  regTitle: { color: 'white', fontSize: 22, fontWeight: '900' },
+  regSub: { color: '#888', fontSize: 12, marginTop: 4 },
+  regProgressBar: { height: 4, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
+  regProgressFill: { height: '100%', backgroundColor: '#ff3b30' },
+  regForm: { padding: 20, paddingBottom: 30 },
+  regStepContainer: { gap: 4 },
+  regStepTitle: { color: 'white', fontSize: 18, fontWeight: '900', marginBottom: 16 },
+  regLabel: { color: '#888', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', marginTop: 14, marginBottom: 6 },
+  regInput: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, color: 'white', fontSize: 14 },
+  regHint: { color: '#666', fontSize: 11, marginTop: 6 },
+  regVibeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  regVibeChip: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
+  regVibeChipActive: { backgroundColor: '#ff3b30', borderColor: '#ff3b30' },
+  regVibeText: { color: '#999', fontSize: 12, fontWeight: '600' },
+  regVibeTextActive: { color: 'white', fontWeight: '800' },
+  regPickBtn: { backgroundColor: '#2e8cff', borderRadius: 100, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  regPickText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  regNoPhotoBox: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 20, marginTop: 16 },
+  regPhotoFixBox: { backgroundColor: 'rgba(0,208,132,0.08)', borderWidth: 1, borderColor: 'rgba(0,208,132,0.15)', borderRadius: 12, padding: 12, marginTop: 16 },
+  regPhotoFixText: { color: '#00d084', fontSize: 11, lineHeight: 16 },
+  regFooter: { flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16, gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
+  regBackBtn: { flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', paddingVertical: 14, borderRadius: 100, alignItems: 'center' },
+  regBackText: { color: '#888', fontWeight: '700' },
+  regNextBtn: { flex: 2, backgroundColor: '#ff3b30', paddingVertical: 14, borderRadius: 100, alignItems: 'center' },
+  regNextText: { color: 'white', fontWeight: '800' },
+  regSkipBtn: { alignItems: 'center', paddingVertical: 12, marginBottom: 20 },
+  regSkipText: { color: '#666', fontSize: 11 },
+
 });

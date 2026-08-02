@@ -1,0 +1,17 @@
+// data/profiles.js - Giorno 8 - Data Layer
+export const PROFILES_DATA = [
+  { id: 1, name: 'Sofia, 24', city: 'Milano', distance: '1.2km', vibe: ['Avventurosa','Buongustaia','Viaggi'], bio: 'Marketing, aperitivi e viaggi spontanei', longBio: 'Vivo a Milano, lavoro nel marketing moda. Viaggi last-minute e vino naturale.', prompts: [{ q: 'Weekend ideale', a: 'Lago di Como + aperitivo + nessun telefono', icon: '🏔️' }], reviews: [{ rating: 5.0 }], photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80&auto=format&fit=crop', online: true, verified: true },
+  { id: 2, name: 'Giulia, 22', city: 'Bergamo', distance: '3.4km', vibe: ['Intensa','Natura','Palestra'], bio: 'Psicologia, palestra e tramonti', longBio: 'Studio psicologia a Bergamo.', prompts: [{ q: 'Unpopular opinion', a: 'Palestra e meditazione', icon: '🤫' }], reviews: [{ rating: 4.6 }], photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80&auto=format&fit=crop', online: true, verified: false },
+  { id: 3, name: 'Martina, 26', city: 'Brescia', distance: '6.1km', vibe: ['Chef','Passionale','Buongustaia'], bio: 'Chef privato, cucino io', longBio: 'Chef Lago di Garda.', prompts: [{ q: 'Cucino meglio di', a: 'Tua nonna - sfida accettata?', icon: '👨‍🍳' }], reviews: [{ rating: 5.0 }], photo: 'https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=800&q=80&auto=format&fit=crop', online: false, verified: true },
+  { id: 4, name: 'Alice, 23', city: 'Milano', distance: '2.8km', vibe: ['Creativa','Arty','Design'], bio: 'Designer in Brera', longBio: 'Designer a Milano, Brera.', prompts: [{ q: 'Museo preferito', a: 'Fondazione Prada', icon: '🎨' }], reviews: [{ rating: 4.7 }], photo: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80&auto=format&fit=crop', online: true, verified: true },
+  { id: 5, name: 'Elena, 25', city: 'Pavia', distance: '8.3km', vibe: ['Zen','Curiosa','Yoga'], bio: 'Yoga e caffe specialty', longBio: 'Istruttrice yoga a Pavia.', prompts: [{ q: 'Mattina ideale', a: 'Yoga 6am + libro + caffe', icon: '🧘' }], reviews: [{ rating: 4.9 }], photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&q=80&auto=format&fit=crop', online: true, verified: true },
+  { id: 6, name: 'Chiara, 24', city: 'Milano', distance: '0.9km', vibe: ['Analogica','Vinile','Creativa'], bio: 'Fotografa analogica', longBio: 'Fotografa analogica, camera oscura e vinili.', prompts: [{ q: 'Scatto migliore', a: 'Quello che non ho ancora fatto', icon: '📸' }], reviews: [{ rating: 4.7 }], photo: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=800&q=80&auto=format&fit=crop', online: false, verified: false },
+];
+export const QUICK_CITIES = ['Tutti', 'Milano', 'Roma', 'Torino', 'Firenze', 'Napoli', 'Bologna', 'Londra', 'Parigi', 'Barcellona', 'New York', 'Tokyo'];
+export const ALL_VIBES = ['Tutti', 'Avventurosa','Buongustaia','Viaggi','Intensa','Natura','Palestra','Chef','Passionale','Creativa','Arty','Design','Zen','Curiosa','Yoga','Analogica','Vinile'];
+export const NEARBY_ENCOUNTERS = [
+  { profileId: 1, location: 'Via Brera, Milano', timeAgo: '2h fa', distance: '300m' },
+  { profileId: 4, location: 'Navigli, Milano', timeAgo: '5h fa', distance: '450m' },
+  { profileId: 6, location: 'Parco Sempione', timeAgo: 'Oggi, 9:12', distance: '1.1km' },
+  { profileId: 2, location: 'Stazione Centrale', timeAgo: 'Ieri, 18:30', distance: '800m' },
+];
